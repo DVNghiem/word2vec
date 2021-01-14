@@ -1,0 +1,22 @@
+window size : 4
+n : size of hidden layer
+w1 (vocab size, n) / w1.T (n, vocab size)
+w2 (n, vocab_size) / w2.T (vocab size, n)
+x : vector one hot (vocab_size, 1)
+
+======== train ===========
+
+* Forward propagation:
+    h = w1.T*x ---> (n, 1)
+    u = w2.T*h --->  (vocab size, 1)
+    y_pred = softmax(u) ---> (vocab size, 1)
+
+* Backward propagation:
+    e = y_pred - y ---> (vocab size, 1)
+    gdw1 = x*((w2*e).T)---> (w2*e).T (1, n) ---> (vocab size, n)
+    gdW2 = h*e.T ---> (n, vocab size)
+
+    w1 = w1 - lr*gdW1
+    w = w - lr*gdw
+    
+    
