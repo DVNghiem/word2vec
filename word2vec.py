@@ -9,15 +9,15 @@ def softmax(x):
 
 class Word2vec:
 
-    def __init__(self, data, hidden_layer, window_size):
+    def __init__(self, data, embedding_size, window_size):
 
-        self.hidden_layer = hidden_layer
+        self.embedding_size = embedding_size
         self.window_size = window_size
         self.createData(data)
         self.w1 = np.random.uniform(-0.8, 0.8,
-                                    (self.vocab.vocab_size, self.hidden_layer))
+                                    (self.vocab.vocab_size, self.embedding_size))
         self.w2 = np.random.uniform(-0.8, 0.8,
-                                    (self.hidden_layer, self.vocab.vocab_size))
+                                    (self.embedding_size, self.vocab.vocab_size))
 
         self.learning_rate = 0.001
 
@@ -68,14 +68,12 @@ class Word2vec:
         return target, context
 
     def forward_propagation(self, x):
-        x = np.array(x).reshape(self.vocab.vocab_size, 1)
         h = np.dot(self.w1.T, x)
         u = np.dot(self.w2.T, h)
         y = softmax(u)
         return y, h, u
 
     def backward_propagation(self, e, h, x):
-        x = x.reshape(self.vocab.vocab_size, 1)
         delta_w1 = np.dot(x, np.dot(self.w2, e).T)
         delta_w2 = np.dot(h, e.T)
         self.w1 = self.w1 - self.learning_rate*delta_w1
@@ -88,19 +86,26 @@ class Word2vec:
             loss += u[i][0]
             c += 1
         loss = -loss
+        u = np.array(u, dtype=np.float128)
         loss += c*np.log(np.sum(np.exp(u)))
         return loss
 
-    def train(self, epochs):
+    def train(self, epochs=100, batch_size=128):
+        nb_batch = len(self.train_x)//batch_size
         for i in range(1, epochs):
             loss = 0
-            for j in range(len(self.train_x)):
-                y_pred, h, u = self.forward_propagation(self.train_x[j])
-                e = (y_pred-self.train_y[j].reshape(self.vocab.vocab_size, 1)
-                     ).reshape(self.vocab.vocab_size, 1)
-                self.backward_propagation(e, h, self.train_x[j])
-                loss += self.loss(u, self.train_y[j])
-            loss /= len(self.train_x)
+            for j in range(nb_batch):
+                batch_x = self.train_x[j *
+                                       batch_size:(j+1)*batch_size].T
+
+                batch_y = self.train_y[j *
+                                       batch_size:(j+1)*batch_size].T
+                y_pred, h, u = self.forward_propagation(batch_x)
+                e = y_pred-batch_y
+
+                self.backward_propagation(e, h, batch_x)
+                loss += self.loss(u, batch_y)
+            loss /= nb_batch
             print("epoch ", i, " loss = ", loss)
 
     def word2vec(self, word):
