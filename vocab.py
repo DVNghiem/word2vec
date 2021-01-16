@@ -24,7 +24,7 @@ class Vocab:
                 self.vocab_size += 1
 
     def processing(self, sentence):
-        sentence = sentence.lower()
+        sentence = sentence.lower().strip()
         sentence = sentence.replace('.', ' ')
         sentence = sentence.replace(',', ' ')
         sentence = sentence.replace('?', ' ')
