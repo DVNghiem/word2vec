@@ -18,12 +18,10 @@ class Vocab:
         sentence = self.processing(sentence)
         list_char = underthesea.word_tokenize(sentence)
         for i in list_char:
-            self.corpus.append(i)
             if i not in self.word2id.keys():
                 self.word2id[i] = self.vocab_size
                 self.id2word[self.vocab_size] = i
                 self.vocab_size += 1
-        self.len_corpus = len(self.corpus)
 
     def processing(self, sentence):
         sentence = sentence.lower()
