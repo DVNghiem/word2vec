@@ -1,10 +1,11 @@
+from tqdm import tqdm
 import numpy as np
 from vocab import Vocab
 from underthesea import word_tokenize
 from optimize import Adam
 import pickle
 import matplotlib.pyplot as plt
-from tqdm import tqdm
+import matplotlib
 
 
 def softmax(x):
@@ -14,7 +15,7 @@ def softmax(x):
 
 class Word2Vec:
 
-    def __init__(self, data, embedding_size, window_size):
+    def __init__(self, data, learning_rate=0.001, embedding_size=128, window_size=2):
 
         self.embedding_size = embedding_size
         self.window_size = window_size
@@ -24,9 +25,9 @@ class Word2Vec:
         self.w2 = np.random.uniform(-0.8, 0.8,
                                     (self.embedding_size, self.vocab.vocab_size))
 
-        self.learning_rate = 0.1
-        self.optimize_w1 = Adam()
-        self.optimize_w2 = Adam()
+        self.learning_rate = learning_rate
+        self.optimize_w1 = Adam(learning_rate=self.learning_rate)
+        self.optimize_w2 = Adam(learning_rate=self.learning_rate)
 
     def __createData(self, data):
         self.train_data = []
@@ -80,12 +81,10 @@ class Word2Vec:
             index = np.where(i == 1)[0][0]
             loss += u[index][0]
         loss = -loss
-        u = np.array(u, dtype=np.float128)
         loss += len(y)*np.log(np.sum(np.exp(u)))
         return loss
 
-    def train(self, epochs=100, batch_size=128):
-        # nb_batch = len(self.train_x)//batch_size
+    def train(self, epochs=100):
         self.losses = []
         for i in range(1, epochs):
             loss = 0
